@@ -7,7 +7,7 @@ The audio samples were taken from "Electronic Music Studios" University of Iowa:
 https://theremin.music.uiowa.edu/MISpiano.html
 Please consider to support their work.
 
-Watch a video on how this sampler was created: https://www.youtube.com/watch?v=sa6QNgTfyXc\
+Watch a video on how this sampler was created: https://www.youtube.com/watch?v=sa6QNgTfyXc
 
 [<img alt="JP Trainer" src="https://github.com/2CoderOK/piano-sampler/blob/main/sampler_preview.png" />](https://www.youtube.com/watch?v=sa6QNgTfyXc)
 
