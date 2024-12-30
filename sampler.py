@@ -81,9 +81,31 @@ if __name__ == "__main__":
         IGNORE_VELOCITY = "--ignore_velocity" in sys.argv
         SUSTAIN = "--sustain" in sys.argv
         sampler = Sampler(mixer, IGNORE_VELOCITY, SUSTAIN)
-        print(mido.get_input_names())
-        PORTNAME = "microKEY-37 1 KEYBOARD 0"  # replace with your MIDI INPUT
-        with mido.open_input(PORTNAME, callback=note_handler) as port:
+
+        midi_ports = mido.get_input_names()
+        portname = None
+        if not midi_ports:
+            print( "\nNo MIDI devices found. Please connect a controller and try again!" )
+            exit( 0 )
+        if len(midi_ports) == 1:
+            portnum = 1
+        else:
+            # more than one MIDI device found
+            print( "Found MIDI devices:" )
+            for i, port in enumerate( midi_ports ):
+                print( f"{i+1}. {port}." )
+            while True:
+                try:
+                    portnum = input( "\nChoose a device by indicating its number as presented above: " )
+                    portnum = int(portnum)
+                    if (portnum < 1) or (portnum > len(midi_ports)):
+                        raise ValueError
+                    break
+                except ValueError:
+                    print(f"Please indicate a valid number in range [1-{len(midi_ports)}]")
+        portname = midi_ports[portnum-1]
+
+        with mido.open_input(portname, callback=note_handler) as port:
             print(f"Using {port}")
             while True:
                 # A dummy loop to give some time for CPU to use for better stuff :)
