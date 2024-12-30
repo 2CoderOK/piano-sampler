@@ -37,13 +37,18 @@ class Sampler:
         for note_id, name in self.id_to_file.items():
             self.sounds[note_id] = mix.Sound("audio/" + name)
 
+        self.pedal_pressed = False
+        self.note_off_q = []
+
     def play(self, note_id: int, vel: int) -> None:
         """
         Play an audio file mapped to a given note_id (midi note id)
         using a velocity supplied in the midi message
         """
         print(f"play({note_id}, {vel})")
-        self.sounds[note_id].stop()
+        # fadeout instead of stop in order to reduce clicks when playing the same
+        # note repeatedly really fast
+        self.sounds[note_id].fadeout(150)
         if not self.ignore_velocity:
             self.sounds[note_id].set_volume(float((vel / 127) * 1.0))
         self.sounds[note_id].play()
@@ -71,9 +76,23 @@ def note_handler(note: mido.Message) -> None:
         if note.type == "note_on":
             print(f"note_on: {note_id}")
             sampler.play(note_id, note.velocity)
+            if note_id in sampler.note_off_q:
+                sampler.note_off_q.remove(note_id)
         elif note.type == "note_off":
             print(f"note_off: {note_id}")
-            sampler.stop(note_id)
+            if sampler.pedal_pressed:
+                sampler.note_off_q.append(note_id)
+            else:
+                sampler.stop(note_id)
+    elif note.control == 64:
+        # sustain pedal pressed
+        sampler.pedal_pressed = bool(note.value)
+        print( "pedal", "pressed." if sampler.pedal_pressed else "released" )
+
+        if not sampler.pedal_pressed:
+            for note_id in sampler.note_off_q:
+                sampler.stop(note_id)
+            sampler.note_off_q = []
 
 
 if __name__ == "__main__":
