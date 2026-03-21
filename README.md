@@ -55,6 +55,22 @@ You can customize the sampler's behavior using the following flags:
 * `--sustain`: Extend the default release time of notes when let go.
 * `--samples-path <path>`: Specify a custom path to your `piano_samples.zip` file (Defaults to the packaged resource or `./piano_samples.zip`).
 
+### 🎛 Keyboard Mode
+
+You can use your computer keyboard as a simple piano controller instead of a MIDI device by passing the `--keyboard` (or `-k`) flag. This avoids opening MIDI ports — a small Pygame window will open to capture key events, and the sampler will play on key press and release on key release.
+
+Usage example:
+
+piano-sampler --keyboard
+
+Key → Note mapping (layout):
+
+    W     E             T     Y     U           O     P
+A      S      D      F     G     H     J     K     L     ;     '
+C4 Db4 D4 Eb4 E4    F4 F#4 G4 Ab4 A4 Bb4 B4 C5 Db5 D5 Eb5 E5  F5
+
+Press `ESC` or close the window to exit keyboard mode.
+
 **Examples:**
 
 List available MIDI devices:

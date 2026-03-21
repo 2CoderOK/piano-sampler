@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "piano-sampler"
-version = "0.1.1"
+version = "0.1.2"
 description = "Simple piano sampler based on pygame"
 readme = "README.md"
 license = { file = "LICENSE" }

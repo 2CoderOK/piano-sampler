@@ -11,10 +11,34 @@ from pathlib import Path
 from collections.abc import Callable
 
 import mido
+import pygame
 from pygame import mixer
 
 LOG = logging.getLogger(__name__)
-__version__ = "0.1.1"
+__version__ = "0.1.2"
+
+# Computer keyboard → MIDI note number mapping
+# Layout mirrors a piano keyboard: white keys on home row, black keys on top row
+KEY_NOTE_MAP: dict[int, int] = {
+    pygame.K_a: 60,  # C4
+    pygame.K_w: 61,  # Db4
+    pygame.K_s: 62,  # D4
+    pygame.K_e: 63,  # Eb4
+    pygame.K_d: 64,  # E4
+    pygame.K_f: 65,  # F4
+    pygame.K_t: 66,  # F#4
+    pygame.K_g: 67,  # G4
+    pygame.K_y: 68,  # Ab4
+    pygame.K_h: 69,  # A4
+    pygame.K_u: 70,  # Bb4
+    pygame.K_j: 71,  # B4
+    pygame.K_k: 72,  # C5
+    pygame.K_o: 73,  # Db5
+    pygame.K_l: 74,  # D5
+    pygame.K_p: 75,  # Eb5
+    pygame.K_SEMICOLON: 76,  # E5
+    pygame.K_QUOTE: 77,  # F5
+}
 
 
 class Sampler:
@@ -132,6 +156,39 @@ class Sampler:
         sound.fadeout(600 if self.sustain else 300)
 
 
+def run_keyboard_mode(sampler: Sampler) -> None:
+    """Event loop that maps computer keyboard keys to sampler notes."""
+    pygame.display.init()
+    pygame.display.set_mode((520, 80))
+    pygame.display.set_caption("Piano Sampler - Keyboard Mode  (ESC / close to quit)")
+    pygame.key.set_repeat(0)  # disable OS key-repeat so held keys don't re-trigger
+    pressed_keys: set[int] = set()
+    LOG.info(
+        "Keyboard mode active — "
+        "A/S/D/F/G/H/J/K/L/;/' = white keys  "
+        "W/E/T/Y/U/O/P = black keys  "
+        "ESC or close window to quit"
+    )
+    try:
+        while True:
+            for ev in pygame.event.get():
+                if ev.type == pygame.QUIT:
+                    return
+                elif ev.type == pygame.KEYDOWN:
+                    if ev.key == pygame.K_ESCAPE:
+                        return
+                    if ev.key in KEY_NOTE_MAP and ev.key not in pressed_keys:
+                        pressed_keys.add(ev.key)
+                        sampler.play(KEY_NOTE_MAP[ev.key], 100)
+                elif ev.type == pygame.KEYUP:
+                    if ev.key in KEY_NOTE_MAP and ev.key in pressed_keys:
+                        pressed_keys.discard(ev.key)
+                        sampler.stop(KEY_NOTE_MAP[ev.key])
+            time.sleep(0.01)
+    except KeyboardInterrupt:
+        LOG.info("Interrupted by user, exiting")
+
+
 def make_note_handler(sampler: Sampler) -> Callable[[mido.Message], None]:
     def _handler(msg: mido.Message) -> None:
         try:
@@ -165,6 +222,12 @@ def main(argv: list[str] | None = None) -> None:
     LOG.info(f"Starting piano-sampler version {__version__}")
     parser = argparse.ArgumentParser(description="Simple MIDI sampler")
     parser.add_argument("--list-ports", action="store_true")
+    parser.add_argument(
+        "--keyboard",
+        "-k",
+        action="store_true",
+        help="Use computer keyboard instead of MIDI input",
+    )
     parser.add_argument("--ignore-velocity", action="store_true")
     parser.add_argument("--sustain", action="store_true")
     parser.add_argument("--polyphony", type=int, default=32)
@@ -196,6 +259,10 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(1)
 
     sampler = Sampler(mixer, args.polyphony, args.ignore_velocity, args.sustain, args.samples_path)
+
+    if args.keyboard:
+        run_keyboard_mode(sampler)
+        return
 
     midi_ports = mido.get_input_names()
     if not midi_ports:
