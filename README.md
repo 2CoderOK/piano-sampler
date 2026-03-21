@@ -65,9 +65,9 @@ piano-sampler --keyboard
 
 Key → Note mapping (layout):
 
-    W     E             T     Y     U           O     P
-A      S      D      F     G     H     J     K     L     ;     '
-C4 Db4 D4 Eb4 E4    F4 F#4 G4 Ab4 A4 Bb4 B4 C5 Db5 D5 Eb5 E5  F5
+        W     E             T     Y     U           O     P
+    A      S      D      F     G     H     J     K     L     ;     '
+    C4 Db4 D4 Eb4 E4    F4 F#4 G4 Ab4 A4 Bb4 B4 C5 Db5 D5 Eb5 E5  F5
 
 Press `ESC` or close the window to exit keyboard mode.
 
